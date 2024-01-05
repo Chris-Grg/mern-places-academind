@@ -1,26 +1,28 @@
 const express = require("express");
+const { check } = require("express-validator");
 
 const router = express.Router();
 
-const Dummy_Places = [
-  {
-    id: "p1",
-    title: "Empire State Building",
-    description: "One of the most famous sky scrapers in the world",
-    location: {
-      lat: 40.7484474,
-      lng: -73.9871516,
-    },
-    address: "20 W 34th St, New York, NY 10001",
-    creator: "u1",
-  },
-];
+const placesControllers = require("../controllers/places-controllers");
 
-router.get("/:pid", (req, res, next) => {
-  const PlaceId = req.params.pid;
-  const place = Dummy_Places.find((p) => p.id === PlaceId);
-  console.log("GET request in places");
-  res.json({ place });
-});
+router.get("/:pid", placesControllers.getPlaceById);
 
+router.get("/user/:uid", placesControllers.getPlacesByUserId);
+
+router.post(
+  "/",
+  [
+    check("title").not().isEmpty(),
+    check("description").isLength({ min: 5 }),
+    check("address").not().isEmpty(),
+  ],
+  placesControllers.createPlace
+);
+
+router.patch(
+  "/:pid",
+  [check("title").not().isEmpty(), check("description").isLength({ min: 5 })],
+  placesControllers.updateById
+);
+router.delete("/:pid", placesControllers.deletebyId);
 module.exports = router;
