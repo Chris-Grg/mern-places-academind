@@ -3,6 +3,7 @@ const { validationResult } = require("express-validator");
 
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../utils/location");
+const Place = require("../models/place");
 
 let Dummy_Places = [
   {
@@ -31,36 +32,69 @@ const createPlace = async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
-  const createdPlace = {
-    id: uuidv4(),
+
+  const createdPlace = new Place({
     title,
     description,
-    location: coordinates,
     address,
+    location: coordinates,
+    image:
+      "https://assets.simpleviewinc.com/simpleview/image/upload/q_75/v1/crm/newyorkstate/GettyImages-486334510_CC36FC20-0DCE-7408-77C72CD93ED4A476-cc36f9e70fc9b45_cc36fc73-07dd-b6b3-09b619cd4694393e.jpg",
     creator,
-  };
-  Dummy_Places.push(createdPlace);
+  });
+  try {
+    await createdPlace.save();
+  } catch (err) {
+    const error = new HttpError("Creating place failed, please try again", 500);
+    return next(error);
+  }
   res.status(201).json({ place: createdPlace });
 };
 
-const getPlaceById = (req, res, next) => {
-  const PlaceId = req.params.pid;
-  const place = Dummy_Places.find((p) => p.id === PlaceId);
-  if (!place) {
-    return next(
-      new HttpError("Could not find a place for the provided place id.", 404)
+const getPlaceById = async (req, res, next) => {
+  const placeId = req.params.pid;
+  let place;
+  try {
+    place = await Place.findById(placeId);
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not find place",
+      500
     );
+
+    return next(error);
   }
-  res.json({ place });
+  if (!place) {
+    const error = new HttpError(
+      "Could not find a place for the provided place id.",
+      404
+    );
+    return next(error);
+  }
+  res.json({ place: place.toObject({ getters: true }) });
 };
 
-const getPlacesByUserId = (req, res, next) => {
+const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
-  const places = Dummy_Places.filter((p) => p.creator === userId);
-  if (!places || places.length === 0) {
-    return next(
-      new HttpError("Could not find a place for the provided user id.", 404)
+  // const places = Dummy_Places.filter((p) => p.creator === userId);
+  let places;
+  try {
+    places = await Place.find({ creator: userId });
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not find user",
+      500
     );
+
+    return next(error);
+  }
+  if (!places || places.length === 0) {
+    const error = new HttpError(
+      "Could not find a place for the provided user id.",
+      404
+    );
+
+    return next(error);
   }
   res.json({ places });
 };
