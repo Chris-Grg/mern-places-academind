@@ -13,8 +13,18 @@ const User = require("../models/user");
 //   },
 // ];
 
-const getUsers = (req, res, next) => {
-  res.json({ users: Dummy_Users });
+const getUsers = async (req, res, next) => {
+  let users;
+  try {
+    users = await User.find({}, "-password");
+  } catch (err) {
+    const error = new HttpError(
+      "Invalid inputs passed, please check your data",
+      422
+    );
+    return next(error);
+  }
+  res.json({ users: users.map((user) => user.toObject({ getters: true })) });
 };
 
 const signupUser = async (req, res, next) => {
@@ -23,7 +33,7 @@ const signupUser = async (req, res, next) => {
     console.log(errors);
     return next(new HttpError("Invalid inputs passed"));
   }
-  const { name, password, email, places } = req.body;
+  const { name, password, email } = req.body;
   let existingUser;
   try {
     existingUser = await User.findOne({ email: email });
@@ -48,7 +58,7 @@ const signupUser = async (req, res, next) => {
     image:
       "https://i.pinimg.com/564x/2b/24/22/2b2422be536bd0e2d360afb61ff51d9e.jpg",
     password,
-    places,
+    places: [],
   });
   try {
     await newUser.save();
