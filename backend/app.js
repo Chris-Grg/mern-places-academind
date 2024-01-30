@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const placesRoutes = require("./routes/places-routes");
 const userRoutes = require("./routes/users-routes");
@@ -8,6 +9,7 @@ const userRoutes = require("./routes/users-routes");
 const HttpError = require("./models/http-error");
 
 const app = express();
+const mongoURI = process.env.MONGODB_URI;
 
 app.use(bodyParser.json());
 
@@ -28,7 +30,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-  .connect("mongodb://localhost:27017")
+  .connect(mongoURI)
   .then(() => {
     app.listen(5000);
   })
