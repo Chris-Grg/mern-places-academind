@@ -4,23 +4,14 @@ const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
 
-// const Dummy_Users = [
-//   {
-//     id: "u1",
-//     name: "John Doe",
-//     password: "pw123",
-//     email: "johndoe@doe.com",
-//   },
-// ];
-
 const getUsers = async (req, res, next) => {
   let users;
   try {
     users = await User.find({}, "-password");
   } catch (err) {
     const error = new HttpError(
-      "Invalid inputs passed, please check your data",
-      422
+      "Fetching Users failed, please try again later.",
+      500
     );
     return next(error);
   }

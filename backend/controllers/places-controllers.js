@@ -6,20 +6,6 @@ const getCoordsForAddress = require("../utils/location");
 const Place = require("../models/place");
 const User = require("../models/user");
 
-// let Dummy_Places = [
-//   {
-//     id: "p1",
-//     title: "Empire State Building",
-//     description: "One of the most famous sky scrapers in the world",
-//     location: {
-//       lat: 40.7484474,
-//       lng: -73.9871516,
-//     },
-//     address: "20 W 34th St, New York, NY 10001",
-//     creator: "u1",
-//   },
-// ];
-
 const createPlace = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -67,8 +53,7 @@ const createPlace = async (req, res, next) => {
     await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError(
-      // "Creating place failed, please try again.",
-      err,
+      "Creating place failed, please try again.",
       500
     );
     return next(error);
@@ -129,11 +114,6 @@ const getPlacesByUserId = async (req, res, next) => {
 
 const deletebyId = async (req, res, next) => {
   const placeId = req.params.pid;
-
-  // if (!Dummy_Places.find((p) => p.id === placeId)) {
-  //   throw new HttpError("Could not find a place for the provided place id.");
-  // }
-  // Dummy_Places = Dummy_Places.filter((p) => p.id !== placeId);
 
   let place;
   try {
